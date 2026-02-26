@@ -5,8 +5,9 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
-    openai_api_key: str = "sk-your-key-here"
-    openai_model: str = "gpt-3.5-turbo"
+    openai_api_key: str = "sk-df1a5848bb00466a84cb5910176e9f42"
+    openai_model: str = "deepseek-chat"
+    openai_base_url: str = "https://api.deepseek.com"
     openai_temperature: float = 0.7
     openai_max_tokens: int = 2000
     

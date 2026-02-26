@@ -3,11 +3,12 @@ from core.config import settings
 
 
 class LLMService:
-    """大语言模型服务 - 与 OpenAI GPT 集成"""
+    """大语言模型服务 - 与 DeepSeek 集成"""
     
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or settings.openai_api_key
         self.model = model or settings.openai_model
+        self.base_url = settings.openai_base_url
         self.temperature = settings.openai_temperature
         self.max_tokens = settings.openai_max_tokens
         self._client = None
@@ -17,7 +18,7 @@ class LLMService:
         if self._client is None:
             try:
                 from openai import OpenAI
-                self._client = OpenAI(api_key=self.api_key)
+                self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
             except ImportError:
                 raise ImportError("请安装 openai: pip install openai")
         return self._client
