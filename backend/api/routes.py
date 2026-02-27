@@ -96,10 +96,29 @@ async def upload_document(file: UploadFile = File(...)):
 @router.post("/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):
     """查询文档 - RAG 完整流程"""
-    from services.llm_service import LLMService
+    from services.llm_service import MockLLMService
+    from services.vector_store import VectorStore
+    from services.embedding_service import EmbeddingService
     
-    llm = LLMService()
-    answer = llm.generate_answer(request.query, [{"content": "这是来自知识库的测试内容", "metadata": {"source": "test"}}])
+    try:
+        es = EmbeddingService()
+        vs = VectorStore(es)
+        search_results = vs.search(query=request.query, top_k=request.top_k)
+        
+        if not search_results:
+            return QueryResponse(
+                answer="抱歉，知识库中没有找到与您问题相关的内容。",
+                sources=[],
+                query=request.query
+            )
+        
+        relevant_chunks = [chunk for chunk, score in search_results]
+        
+    except Exception as e:
+        relevant_chunks = [{"content": f"错误: {str(e)}", "metadata": {"source": "error"}}]
+    
+    mock_llm = MockLLMService()
+    answer = mock_llm.generate_answer(query=request.query, context_chunks=relevant_chunks)
     
     return QueryResponse(
         answer=answer,
@@ -111,7 +130,24 @@ async def query_documents(request: QueryRequest):
 @router.get("/search")
 async def search_documents(query: str, top_k: Optional[int] = 5):
     """简单搜索"""
-    return {"query": query, "total": 0, "results": []}
+    from services.vector_store import VectorStore
+    from services.embedding_service import EmbeddingService
+    
+    es = EmbeddingService()
+    vs = VectorStore(es)
+    search_results = vs.search(query=query, top_k=top_k)
+    
+    results = [
+        {
+            "chunk_id": chunk.get('chunk_id', ''),
+            "content": chunk.get('content', ''),
+            "score": score,
+            "metadata": chunk.get('metadata', {})
+        }
+        for chunk, score in search_results
+    ]
+    
+    return {"query": query, "total": len(results), "results": results}
 
 
 @router.get("/documents")

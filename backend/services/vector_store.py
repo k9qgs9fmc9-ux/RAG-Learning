@@ -22,7 +22,6 @@ class VectorStore:
         self.index: Optional[faiss.IndexFlatIP] = None
         self.chunks: List[dict] = []
         self.document_ids: List[str] = []
-        self._load_index()
     
     def _create_index(self) -> faiss.Index:
         index = faiss.IndexFlatIP(self.dimension)
