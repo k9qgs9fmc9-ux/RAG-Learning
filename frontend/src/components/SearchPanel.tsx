@@ -40,7 +40,7 @@ export default function SearchPanel() {
       }
 
       const data: SearchResponse = await response.json()
-      setSearchResults(data.results || [])
+      setSearchResults(data.sources || [])
     } catch (error) {
       console.error('搜索错误:', error)
     } finally {

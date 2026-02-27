@@ -25,6 +25,9 @@ export interface QueryResponse {
   query: string
 }
 
+export type ChatResponse = QueryResponse
+export type SearchResponse = QueryResponse
+
 export interface UploadResponse {
   document_id: string
   filename: string

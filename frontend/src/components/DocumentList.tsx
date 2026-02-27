@@ -8,7 +8,7 @@ interface DocumentListProps {
 
 export default function DocumentList({ documents, onRefresh }: DocumentListProps) {
   const handleDelete = async (documentId: string) => {
-    if (!confirm('确定要清空知识库吗？')) return
+    if (!window.confirm('确定要清空知识库吗？')) return
 
     try {
       const response = await fetch(`/api/documents/${documentId}`, {

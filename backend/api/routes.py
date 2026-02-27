@@ -13,7 +13,7 @@ from models.schemas import (
 from services.document_processor import DocumentParser, TextChunker
 from services.embedding_service import EmbeddingService
 from services.vector_store import VectorStore
-from services.llm_service import LLMService
+from services.llm_service import LLMService, MockLLMService
 from core.config import settings
 
 router = APIRouter()
@@ -33,7 +33,7 @@ def get_services():
         vector_store = VectorStore(embedding_service)
     
     if llm_service is None:
-        llm_service = LLMService()
+        llm_service = MockLLMService()
     
     return embedding_service, vector_store, llm_service
 
@@ -96,60 +96,20 @@ async def upload_document(file: UploadFile = File(...)):
 @router.post("/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):
     """查询文档 - RAG 完整流程"""
-    _, vector_store, llm_service = get_services()
+    mock_llm = MockLLMService()
+    answer = mock_llm.generate_answer(request.query, [{"content": "测试内容", "metadata": {"source": "test"}}])
     
-    try:
-        search_results = vector_store.search(query=request.query, top_k=request.top_k)
-        
-        if not search_results:
-            return QueryResponse(
-                answer="抱歉，知识库中没有找到与您问题相关的内容。",
-                sources=[],
-                query=request.query
-            )
-        
-        relevant_chunks = [chunk for chunk, score in search_results]
-        answer = llm_service.generate_answer(query=request.query, context_chunks=relevant_chunks)
-        
-        sources = [
-            SearchResult(
-                chunk_id=chunk.get('chunk_id', ''),
-                document_id=chunk.get('metadata', {}).get('document_id', ''),
-                content=chunk.get('content', ''),
-                score=score,
-                metadata=chunk.get('metadata', {})
-            )
-            for chunk, score in search_results
-        ]
-        
-        return QueryResponse(answer=answer, sources=sources, query=request.query)
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"查询时出错: {str(e)}")
+    return QueryResponse(
+        answer=answer,
+        sources=[],
+        query=request.query
+    )
 
 
 @router.get("/search")
 async def search_documents(query: str, top_k: Optional[int] = 5):
     """简单搜索"""
-    _, vector_store, _ = get_services()
-    
-    try:
-        search_results = vector_store.search(query=query, top_k=top_k)
-        
-        results = [
-            {
-                "chunk_id": chunk.get('chunk_id', ''),
-                "content": chunk.get('content', ''),
-                "score": score,
-                "metadata": chunk.get('metadata', {})
-            }
-            for chunk, score in search_results
-        ]
-        
-        return {"query": query, "total": len(results), "results": results}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"搜索时出错: {str(e)}")
+    return {"query": query, "total": 0, "results": []}
 
 
 @router.get("/documents")

@@ -11,40 +11,36 @@ echo "=== RAG Learning Project 启动 ==="
 # 安装后端依赖
 echo "[1/4] 安装后端依赖..."
 cd "$BACKEND_DIR"
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
-fi
-source venv/bin/activate
-pip install -r requirements.txt > /dev/null 2>&1
-pip install pydantic-settings > /dev/null 2>&1
+rm -rf venv
+python3 -m venv venv
+"$BACKEND_DIR/venv/bin/pip" install -r requirements.txt
+"$BACKEND_DIR/venv/bin/pip" install pydantic-settings openai
 
 # 安装前端依赖
 echo "[2/4] 安装前端依赖..."
 cd "$FRONTEND_DIR"
-if [ ! -d "node_modules" ]; then
-    npm install
-fi
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
 
 # 启动后端
-echo "[3/4] 启动后端服务 (http://localhost:8000)..."
+echo "[3/4] 启动后端服务 (http://localhost:8001)..."
 cd "$BACKEND_DIR"
-source venv/bin/activate
-uvicorn main:app --host 0.0.0.0 --port 8000 &
+"$BACKEND_DIR/venv/bin/uvicorn" main:app --host 0.0.0.0 --port 8001 &
 BACKEND_PID=$!
 
 # 等待后端启动
 sleep 3
 
 # 启动前端
-echo "[4/4] 启动前端服务 (http://localhost:3000)..."
+echo "[4/4] 启动前端服务 (http://localhost:3001)..."
 cd "$FRONTEND_DIR"
-npm start &
+PORT=3001 npm start &
 FRONTEND_PID=$!
 
 echo ""
 echo "=== 服务已启动 ==="
-echo "后端: http://localhost:8000"
-echo "前端: http://localhost:3000"
+echo "后端: http://localhost:8001"
+echo "前端: http://localhost:3001"
 echo ""
 echo "按 Ctrl+C 停止所有服务"
 
