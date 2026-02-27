@@ -33,7 +33,7 @@ def get_services():
         vector_store = VectorStore(embedding_service)
     
     if llm_service is None:
-        llm_service = MockLLMService()
+        llm_service = LLMService()
     
     return embedding_service, vector_store, llm_service
 
@@ -96,8 +96,10 @@ async def upload_document(file: UploadFile = File(...)):
 @router.post("/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):
     """查询文档 - RAG 完整流程"""
-    mock_llm = MockLLMService()
-    answer = mock_llm.generate_answer(request.query, [{"content": "测试内容", "metadata": {"source": "test"}}])
+    from services.llm_service import LLMService
+    
+    llm = LLMService()
+    answer = llm.generate_answer(request.query, [{"content": "这是来自知识库的测试内容", "metadata": {"source": "test"}}])
     
     return QueryResponse(
         answer=answer,

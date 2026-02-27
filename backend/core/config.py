@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
-    openai_api_key: str = "sk-df1a5848bb00466a84cb5910176e9f42"
-    openai_model: str = "deepseek-chat"
-    openai_base_url: str = "https://api.deepseek.com"
+    openai_api_key: str = "sk-62c624e8f0f2403da26b02aa348ec860"
+    openai_model: str = "qwen3.5-flash"
+    openai_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     openai_temperature: float = 0.7
     openai_max_tokens: int = 2000
     
